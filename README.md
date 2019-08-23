@@ -1,0 +1,2 @@
+# JavaDrawingPanel
+利用Java实现的画板，在原来的基础上改掉了更改大小内容消失的bug
