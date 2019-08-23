@@ -4,11 +4,18 @@
  *   March 2013
  */
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Stack;
 
 
 public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionListener
@@ -30,7 +37,7 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
     public Tool currentTool;            //indicates the isSelected Tool
     public ToolDetails currentToolDetails;  //isSelected tool details
     public Color backgroundColor;           //background color
-
+    public static Queue<PaintElement> history = new  LinkedList<PaintElement>();
 
     /**************************************************************************************************************
      *****************************************************CONSTRUCTOR***********************************************
@@ -64,7 +71,7 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
      * @param pointX2     point x2
      * @param pointY2     point y2
      */
-    private void drawGraphics(Graphics2D graphics2D, Tool currentTool, int pointX1, int pointY1, int pointX2, int pointY2)
+    public void drawGraphics(Graphics2D graphics2D, Tool currentTool, int pointX1, int pointY1, int pointX2, int pointY2, ToolDetails currentToolDetails)
     {
         if (currentTool.toolType == ToolFactory.LINE_TOOL)                  //if isSelected tool is LINE
         {                                                                   //set stroke
@@ -224,7 +231,7 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
                 currentTool.toolType != ToolFactory.ERASER_TOOL)  //...and isSelected tool is not BRUSH
         {
             graphics.setColor(brushColor);                                             //set color
-            drawGraphics(graphics2D, currentTool, startX, startY, mouseX, mouseY);     //call the drawGraphics method
+            drawGraphics(graphics2D, currentTool, startX, startY, mouseX, mouseY, currentToolDetails);     //call the drawGraphics method
         }
 
     }
@@ -325,10 +332,24 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
             if (mouseX != startX && mouseY != startY) {
                 // Draw the shape only if both its height
                 // and width are non-zero.
-                drawGraphics(dragGraphics, currentTool, startX, startY, mouseX, mouseY);
+                drawGraphics(dragGraphics, currentTool, startX, startY, mouseX, mouseY, currentToolDetails);
+                history.offer(new PaintElement(currentTool, startX, startY, mouseX, mouseY, currentToolDetails));
                 repaintRectangle(startX, startY, mouseX, mouseY);
             }
         }
+        
+        
+        try
+        {
+            File selectedFile = new File("./tmp.png");
+            BufferedImage img = MenuBar.getScreenShot(Main.paint.drawingPanel);            //get current image screenshot
+            ImageIO.write(img, "png", selectedFile);                               //write the image to the isSelected file
+        } catch (IOException ioe)
+        {
+            JOptionPane.showMessageDialog(null, "Could not save the file");
+        }
+        
+        
         dragGraphics.dispose();
         dragGraphics = null;
     }
@@ -350,19 +371,19 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
 
         if (currentTool.toolType == ToolFactory.PENCILL_TOOL)
         {
-            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.LINE_TOOL), prevX, prevY, mouseX, mouseY); // A CURVE is drawn as a series of LINEs.
+            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.LINE_TOOL), prevX, prevY, mouseX, mouseY, currentToolDetails); // A CURVE is drawn as a series of LINEs.
             repaintRectangle(prevX, prevY, mouseX, mouseY);
         }
 
         else if (currentTool.toolType == ToolFactory.ERASER_TOOL)
         {
-            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.LINE_TOOL), prevX, prevY, mouseX, mouseY);
+            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.LINE_TOOL), prevX, prevY, mouseX, mouseY, currentToolDetails);
             repaintRectangle(prevX, prevY, mouseX, mouseY);
         }
 
         else if (currentTool.toolType == ToolFactory.AIR_BRUSH_TOOL)
         {
-            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.AIR_BRUSH_TOOL), prevX, prevY, mouseX, mouseY);
+            drawGraphics(dragGraphics, ToolFactory.createTool(ToolFactory.AIR_BRUSH_TOOL), prevX, prevY, mouseX, mouseY, currentToolDetails);
             repaintRectangle(prevX, prevY, mouseX, mouseY);
         }
         else
@@ -386,5 +407,7 @@ public class DrawingPanel extends JPanel implements  MouseListener, MouseMotionL
 
     @Override
     public void mouseMoved(MouseEvent e) {}
-
+    
+   
+	
 }

@@ -4,8 +4,16 @@
  *   March 2013
  */
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.awt.image.BufferedImage;
 
 public class PaintApplication extends JFrame
 {
@@ -42,6 +50,55 @@ public class PaintApplication extends JFrame
         this.setLocationRelativeTo(null);                               //set locating to the middle of the screen
         this.setVisible(true);                                          //set visible
         setStaringColor();                                             //set the starting color
+        
+        this.addWindowListener(new WindowListener() {
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO Auto-generated method stub
+				// 删除当前保存的临时文件
+				File file = new File("./tmp.png");
+				if (file.exists() && file.isFile()) {
+					file.delete();
+				}
+			}
+			
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
     }
 
     /**************************************************************************************************************
@@ -76,4 +133,29 @@ public class PaintApplication extends JFrame
             return null;
         }
     }
+    
+    public void paint(Graphics g) {
+		// TODO Auto-generated method stub
+		super.paint(g);
+		// 恢复最大最小化时候的状态
+//		System.out.println(DrawingPanel.history.size());
+//		for(PaintElement pe : DrawingPanel.history) {
+//			System.out.println(pe.currentTool.toolType);
+//			drawGraphics((Graphics2D) g, pe.currentTool, pe.startX, pe.startY, pe.mouseX, pe.mouseY, pe.currenToolDetails);
+//		}
+		
+		try
+        {
+			File file = new File("./tmp.png");
+			if (file.exists() && file.isFile()) {
+            Main.paint.drawingPanel.setOSImage(ImageIO.read(file)); //set current image to isSelected image
+			}
+        } catch (IOException ex)
+        {
+            JOptionPane.showMessageDialog(null, "Could not open file");
+        }
+		
+	}
+
+    
 }
